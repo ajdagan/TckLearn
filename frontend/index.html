@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TckLearn - Live IT & Computing Education</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2B5BBA;
+            --primary-light: #4A7DD6;
+            --primary-dark: #1E4088;
+            --accent: #FF6B35;
+            --success: #10B981;
+            --warning: #F59E0B;
+            
+            --bg-white: #FFFFFF;
+            --bg-light: #F9FAFB;
+            --bg-lighter: #F3F4F6;
+            --bg-cream: #FFFBF5;
+            
+            --text-dark: #1F2937;
+            --text-gray: #4B5563;
+            --text-light: #6B7280;
+            --text-lighter: #9CA3AF;
+            
+            --border: #E5E7EB;
+            --border-light: #F3F4F6;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-white);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Fraunces', serif;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--text-dark);
+        }
+
+        .app {
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.75rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-lighter);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 6rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-cream) 0%, var(--bg-white) 100%);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-highlight {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .trust-badge svg {
+            width: 20px;
+            height: 20px;
+            color: var(--success);
+        }
+
+        /* Features Grid */
+        .features-section {
+            padding: 6rem 2rem;
+            background: var(--bg-white);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+        }
+
+        .features {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-cream);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .feature-card p {
+            color: var(--text-gray);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            max-width: 1200px;
+            margin: 6rem auto;
+            padding: 0 2rem;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-header h2 {
+            font-size: 2.75rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .pricing-header p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-8px);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            background: linear-gradient(180deg, var(--bg-cream) 0%, var(--bg-white) 100%);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 1rem 0 0.5rem;
+            color: var(--text-dark);
+            font-family: 'Fraunces', serif;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .price-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 0 0 2rem 0;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            max-width: 1200px;
+            margin: 7rem auto 4rem;
+            padding: 0 2rem;
+        }
+
+        .dashboard-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .dashboard-header h2 {
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: var(--text-gray);
+            font-size: 1.05rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        .class-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .class-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+
+        .class-badge {
+            background: var(--bg-cream);
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .class-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .class-info {
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .class-info p {
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Forms */
+        .form-container {
+            max-width: 480px;
+            margin: 7rem auto 4rem;
+            padding: 0 2rem;
+        }
+
+        .form-card {
+            background: var(--bg-white);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-card h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: var(--bg-white);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(43, 91, 186, 0.1);
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 1rem;
+            font-size: 1rem;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .form-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-light);
+            padding: 4rem 2rem 2rem;
+            margin-top: 6rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .footer-section p {
+            color: var(--text-gray);
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin: 0.6rem 0;
+        }
+
+        .footer-section a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            border: 1px solid #86EFAC;
+            color: #065F46;
+        }
+
+        .alert-error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .alert-info {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            color: #1E40AF;
+        }
+
+        .spinner {
+            border: 2px solid var(--border-light);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .pricing-header h2 {
+                font-size: 2rem;
+            }
+            
+            .price {
+                font-size: 2.5rem;
+            }
+
+            .trust-badges {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection */
+        ::selection {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // API Configuration
+        const API_URL = 'http://localhost:5000/api';
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const STRIPE_PUBLIC_KEY = 'YOUR_STRIPE_PUBLIC_KEY';
+
+        // Initialize Stripe
+        const stripe = window.Stripe && window.Stripe(STRIPE_PUBLIC_KEY);
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(false);
+
+            useEffect(() => {
+                // Check if user is logged in
+                const token = localStorage.getItem('token');
+                if (token) {
+                    fetchUserProfile(token);
+                }
+            }, []);
+
+            const fetchUserProfile = async (token) => {
+                try {
+                    const response = await fetch(`${API_URL}/user/profile`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        setUser(data.user);
+                    }
+                } catch (error) {
+                    console.error('Error fetching profile:', error);
+                }
+            };
+
+            const logout = () => {
+                localStorage.removeItem('token');
+                setUser(null);
+                setCurrentPage('home');
+            };
+
+            return (
+                <div className="app">
+                    <Navbar 
+                        currentPage={currentPage} 
+                        setCurrentPage={setCurrentPage}
+                        user={user}
+                        logout={logout}
+                    />
+                    
+                    {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'login' && <LoginPage setUser={setUser} setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'register' && <RegisterPage setUser={setUser} setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'dashboard' && <Dashboard user={user} />}
+                    {currentPage === 'subscribe' && <SubscriptionPage user={user} />}
+                    
+                    <Footer />
+                </div>
+            );
+        }
+
+        function Navbar({ currentPage, setCurrentPage, user, logout }) {
+            return (
+                <nav className="navbar">
+                    <div className="nav-container">
+                        <div className="logo" onClick={() => setCurrentPage('home')} style={{cursor: 'pointer'}}>
+                            TckLearn
+                        </div>
+                        <div className="nav-links">
+                            <a href="#" className="nav-link" onClick={() => setCurrentPage('home')}>Home</a>
+                            <a href="#courses" className="nav-link">Courses</a>
+                            <a href="#pricing" className="nav-link">Pricing</a>
+                            {user ? (
+                                <>
+                                    <a href="#" className="nav-link" onClick={() => setCurrentPage('dashboard')}>Dashboard</a>
+                                    <button className="btn btn-secondary" onClick={logout}>Logout</button>
+                                </>
+                            ) : (
+                                <>
+                                    <a href="#" className="nav-link" onClick={() => setCurrentPage('login')}>Login</a>
+                                    <button className="btn btn-primary" onClick={() => setCurrentPage('register')}>
+                                        Get Started
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        function HomePage({ setCurrentPage }) {
+            return (
+                <>
+                    <section className="hero">
+                        <div className="hero-content">
+                            <h1>
+                                Learn IT & Computing from <span className="hero-highlight">Expert Instructors</span>
+                            </h1>
+                            <p>
+                                Live, interactive classes with industry professionals. Master programming, 
+                                cybersecurity, cloud computing, and more through personalized instruction.
+                            </p>
+                            <div className="cta-buttons">
+                                <button className="btn btn-primary" onClick={() => setCurrentPage('register')}>
+                                    Start Learning Today
+                                </button>
+                                <button className="btn btn-outline" onClick={() => document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})}>
+                                    View Pricing
+                                </button>
+                            </div>
+                            <div className="trust-badges">
+                                <div className="trust-badge">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Live Classes
+                                </div>
+                                <div className="trust-badge">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Expert Instructors
+                                </div>
+                                <div className="trust-badge">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Flexible Schedule
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="features-section" id="courses">
+                        <div className="section-header">
+                            <h2>Why Choose TckLearn?</h2>
+                            <p>Everything you need to excel in your IT career, in one place</p>
+                        </div>
+                        <div className="features">
+                            <div className="feature-card">
+                                <div className="feature-icon">💻</div>
+                                <h3>Live Interactive Classes</h3>
+                                <p>
+                                    Connect directly with expert instructors via video call. Ask questions, 
+                                    share your screen, and get real-time feedback on your work.
+                                </p>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon">📚</div>
+                                <h3>Comprehensive Curriculum</h3>
+                                <p>
+                                    From Python fundamentals to advanced cloud architecture, our courses 
+                                    cover the full spectrum of modern IT skills.
+                                </p>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon">🎯</div>
+                                <h3>Flexible Learning</h3>
+                                <p>
+                                    Choose weekly, monthly, or yearly subscriptions. Learn at your own pace 
+                                    with access to multiple live sessions each week.
+                                </p>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon">👨‍🏫</div>
+                                <h3>Industry Professionals</h3>
+                                <p>
+                                    Learn from instructors with years of real-world experience in software 
+                                    development, cybersecurity, and IT infrastructure.
+                                </p>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon">🏆</div>
+                                <h3>Career-Ready Skills</h3>
+                                <p>
+                                    Our courses align with industry certifications and prepare you for 
+                                    professional opportunities in the tech sector.
+                                </p>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon">🤝</div>
+                                <h3>Supportive Community</h3>
+                                <p>
+                                    Join a vibrant community of learners. Collaborate on projects, share 
+                                    knowledge, and network with peers worldwide.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="pricing-section" id="pricing">
+                        <div className="pricing-header">
+                            <h2>Choose Your Plan</h2>
+                            <p>Flexible pricing to match your learning goals</p>
+                        </div>
+                        <div className="pricing-cards">
+                            <PricingCard 
+                                title="Weekly"
+                                price="29"
+                                period="week"
+                                description="Perfect for trying out our platform"
+                                features={[
+                                    '4 live classes per week',
+                                    'Access to all course materials',
+                                    'Community forum access',
+                                    'Email support',
+                                    'Class recordings available'
+                                ]}
+                                setCurrentPage={setCurrentPage}
+                                planType="weekly"
+                            />
+                            <PricingCard 
+                                title="Monthly"
+                                price="99"
+                                period="month"
+                                featured={true}
+                                badge="Most Popular"
+                                description="Best for committed learners"
+                                features={[
+                                    '20 live classes per month',
+                                    'All course materials & resources',
+                                    'Priority class scheduling',
+                                    'Premium email support',
+                                    'Lifetime access to recordings',
+                                    'Certificate of completion'
+                                ]}
+                                setCurrentPage={setCurrentPage}
+                                planType="monthly"
+                            />
+                            <PricingCard 
+                                title="Yearly"
+                                price="999"
+                                period="year"
+                                badge="Best Value"
+                                description="For serious career advancement"
+                                features={[
+                                    'Unlimited live classes',
+                                    'All courses & new releases',
+                                    'VIP priority scheduling',
+                                    '24/7 premium support',
+                                    'Lifetime recording access',
+                                    'Professional certification',
+                                    '1-on-1 mentorship sessions',
+                                    'Career counseling included'
+                                ]}
+                                setCurrentPage={setCurrentPage}
+                                planType="yearly"
+                            />
+                        </div>
+                    </section>
+                </>
+            );
+        }
+
+        function PricingCard({ title, price, period, features, featured, badge, setCurrentPage, planType, description }) {
+            return (
+                <div className={`pricing-card ${featured ? 'featured' : ''}`}>
+                    {badge && <div className="pricing-badge">{badge}</div>}
+                    <h3>{title}</h3>
+                    <div className="price">
+                        ${price}<span>/{period}</span>
+                    </div>
+                    {description && <div className="price-description">{description}</div>}
+                    <ul className="pricing-features">
+                        {features.map((feature, index) => (
+                            <li key={index}>{feature}</li>
+                        ))}
+                    </ul>
+                    <button 
+                        className="btn btn-primary btn-full"
+                        onClick={() => {
+                            localStorage.setItem('selectedPlan', planType);
+                            setCurrentPage('register');
+                        }}
+                    >
+                        Choose {title}
+                    </button>
+                </div>
+            );
+        }
+
+        function LoginPage({ setUser, setCurrentPage }) {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                try {
+                    const response = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('token', data.token);
+                        setUser(data.user);
+                        setCurrentPage('dashboard');
+                    } else {
+                        setError(data.error || 'Login failed');
+                    }
+                } catch (error) {
+                    setError('Network error. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="form-container">
+                    <div className="form-card">
+                        <h2>Welcome Back</h2>
+                        <p className="form-subtitle">Sign in to access your courses</p>
+                        {error && <div className="alert alert-error">{error}</div>}
+                        <form onSubmit={handleLogin}>
+                            <div className="form-group">
+                                <label>Email Address</label>
+                                <input 
+                                    type="email" 
+                                    className="form-control"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Password</label>
+                                <input 
+                                    type="password" 
+                                    className="form-control"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                                {loading ? 'Logging in...' : 'Sign In'}
+                            </button>
+                        </form>
+                        <div className="form-footer">
+                            Don't have an account? <a href="#" className="form-link" onClick={() => setCurrentPage('register')}>Sign up</a>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function RegisterPage({ setUser, setCurrentPage }) {
+            const [formData, setFormData] = useState({
+                name: '',
+                email: '',
+                password: '',
+                confirmPassword: ''
+            });
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+
+            const handleRegister = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                if (formData.password !== formData.confirmPassword) {
+                    setError('Passwords do not match');
+                    setLoading(false);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: formData.name,
+                            email: formData.email,
+                            password: formData.password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('token', data.token);
+                        setUser(data.user);
+                        setCurrentPage('subscribe');
+                    } else {
+                        setError(data.error || 'Registration failed');
+                    }
+                } catch (error) {
+                    setError('Network error. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="form-container">
+                    <div className="form-card">
+                        <h2>Create Your Account</h2>
+                        <p className="form-subtitle">Start your learning journey today</p>
+                        {error && <div className="alert alert-error">{error}</div>}
+                        <form onSubmit={handleRegister}>
+                            <div className="form-group">
+                                <label>Full Name</label>
+                                <input 
+                                    type="text" 
+                                    name="name"
+                                    className="form-control"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="John Doe"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Email Address</label>
+                                <input 
+                                    type="email" 
+                                    name="email"
+                                    className="form-control"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Password</label>
+                                <input 
+                                    type="password" 
+                                    name="password"
+                                    className="form-control"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Confirm Password</label>
+                                <input 
+                                    type="password" 
+                                    name="confirmPassword"
+                                    className="form-control"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                                {loading ? 'Creating Account...' : 'Create Account'}
+                            </button>
+                        </form>
+                        <div className="form-footer">
+                            Already have an account? <a href="#" className="form-link" onClick={() => setCurrentPage('login')}>Sign in</a>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function SubscriptionPage({ user }) {
+            const [selectedPlan, setSelectedPlan] = useState(localStorage.getItem('selectedPlan') || 'monthly');
+            const [loading, setLoading] = useState(false);
+            const [message, setMessage] = useState('');
+
+            const plans = {
+                weekly: { name: 'Weekly', price: 29, priceId: 'price_weekly' },
+                monthly: { name: 'Monthly', price: 99, priceId: 'price_monthly' },
+                yearly: { name: 'Yearly', price: 999, priceId: 'price_yearly' }
+            };
+
+            const handleSubscribe = async () => {
+                setLoading(true);
+                setMessage('');
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${API_URL}/subscription/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            planType: selectedPlan,
+                            priceId: plans[selectedPlan].priceId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.sessionId) {
+                        // Redirect to Stripe Checkout
+                        if (stripe) {
+                            const result = await stripe.redirectToCheckout({
+                                sessionId: data.sessionId
+                            });
+                            if (result.error) {
+                                setMessage(result.error.message);
+                            }
+                        } else {
+                            setMessage('Payment system not initialized');
+                        }
+                    } else {
+                        setMessage(data.error || 'Failed to create subscription');
+                    }
+                } catch (error) {
+                    setMessage('Network error. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="form-container">
+                    <div className="form-card">
+                        <h2>Choose Your Plan</h2>
+                        {message && <div className="alert alert-error">{message}</div>}
+                        
+                        <div style={{marginBottom: '2rem'}}>
+                            {Object.keys(plans).map((key) => (
+                                <div 
+                                    key={key}
+                                    onClick={() => setSelectedPlan(key)}
+                                    style={{
+                                        padding: '1.5rem',
+                                        marginBottom: '1rem',
+                                        background: selectedPlan === key ? 'rgba(0, 217, 255, 0.1)' : 'var(--dark-lighter)',
+                                        border: `2px solid ${selectedPlan === key ? 'var(--primary)' : 'rgba(0, 217, 255, 0.2)'}`,
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div>
+                                            <h3 style={{marginBottom: '0.5rem'}}>{plans[key].name}</h3>
+                                            <p style={{color: 'var(--text-muted)', margin: 0}}>
+                                                Best for {key === 'weekly' ? 'trying out' : key === 'monthly' ? 'regular learners' : 'serious students'}
+                                            </p>
+                                        </div>
+                                        <div style={{fontSize: '2rem', fontWeight: 'bold'}}>
+                                            ${plans[key].price}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button 
+                            className="btn btn-primary btn-full"
+                            onClick={handleSubscribe}
+                            disabled={loading}
+                        >
+                            {loading ? <div className="spinner"></div> : `Subscribe to ${plans[selectedPlan].name} Plan`}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function Dashboard({ user }) {
+            const [classes, setClasses] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                fetchClasses();
+            }, []);
+
+            const fetchClasses = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${API_URL}/classes/upcoming`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        setClasses(data.classes || []);
+                    }
+                } catch (error) {
+                    console.error('Error fetching classes:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="dashboard">
+                    <div className="dashboard-header">
+                        <h2>Welcome back, {user?.name}!</h2>
+                        <p>Here are your upcoming live classes</p>
+                    </div>
+
+                    {loading ? (
+                        <div style={{textAlign: 'center', padding: '3rem'}}>
+                            <div className="spinner"></div>
+                        </div>
+                    ) : classes.length === 0 ? (
+                        <div style={{
+                            textAlign: 'center', 
+                            padding: '4rem 2rem',
+                            background: 'var(--bg-light)',
+                            borderRadius: '12px',
+                            border: '1px solid var(--border)'
+                        }}>
+                            <h3 style={{marginBottom: '0.5rem', color: 'var(--text-dark)'}}>No upcoming classes</h3>
+                            <p style={{color: 'var(--text-gray)'}}>Check back soon for new live sessions!</p>
+                        </div>
+                    ) : (
+                        <div className="dashboard-grid">
+                            {classes.map((classItem) => (
+                                <ClassCard key={classItem.id} classItem={classItem} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function ClassCard({ classItem }) {
+            return (
+                <div className="class-card">
+                    <div className="class-header">
+                        <div className="class-badge">{classItem.category}</div>
+                    </div>
+                    <h3>{classItem.title}</h3>
+                    <div className="class-info">
+                        <p>📅 {classItem.date}</p>
+                        <p>🕐 {classItem.time}</p>
+                        <p>👨‍🏫 {classItem.instructor}</p>
+                    </div>
+                    <button 
+                        className="btn btn-primary btn-full"
+                        onClick={() => window.open(classItem.meetingLink, '_blank')}
+                    >
+                        Join Class
+                    </button>
+                </div>
+            );
+        }
+
+        function Footer() {
+            return (
+                <footer className="footer">
+                    <div className="footer-content">
+                        <div className="footer-section">
+                            <h3>TckLearn</h3>
+                            <p style={{color: 'var(--text-muted)'}}>
+                                Empowering the next generation of tech professionals through live, 
+                                interactive education.
+                            </p>
+                        </div>
+                        <div className="footer-section">
+                            <h3>Courses</h3>
+                            <ul>
+                                <li><a href="#">Python Programming</a></li>
+                                <li><a href="#">Web Development</a></li>
+                                <li><a href="#">Cybersecurity</a></li>
+                                <li><a href="#">Cloud Computing</a></li>
+                            </ul>
+                        </div>
+                        <div className="footer-section">
+                            <h3>Company</h3>
+                            <ul>
+                                <li><a href="#">About Us</a></li>
+                                <li><a href="#">Careers</a></li>
+                                <li><a href="#">Contact</a></li>
+                                <li><a href="#">Blog</a></li>
+                            </ul>
+                        </div>
+                        <div className="footer-section">
+                            <h3>Support</h3>
+                            <ul>
+                                <li><a href="#">Help Center</a></li>
+                                <li><a href="#">Privacy Policy</a></li>
+                                <li><a href="#">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="footer-bottom">
+                        <p>&copy; 2024 TckLearn. All rights reserved.</p>
+                    </div>
+                </footer>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
